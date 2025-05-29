@@ -1,7 +1,28 @@
 import prisma from '../../../../lib/prisma';
 import { NextResponse } from 'next/server';
 
+const mockMediaData = [
+  {
+    id: 1,
+    title: 'Mock Media 1',
+    description: 'This is a mock media description.',
+    file_link: 'https://example.com/file1.mp4',
+    thumbnail: 'https://example.com/thumb1.jpg',
+  },
+  {
+    id: 2,
+    title: 'Mock Media 2',
+    description: 'This is another mock media description.',
+    file_link: 'https://example.com/file2.mp4',
+    thumbnail: 'https://example.com/thumb2.jpg',
+  },
+];
+
 export async function GET() {
+  if (!process.env.DATABASE_URL) {
+    // Return mock data if DATABASE_URL is not set
+    return NextResponse.json(mockMediaData);
+  }
   try {
     const data = await prisma.media.findMany();
     return NextResponse.json(data);
@@ -12,6 +33,13 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!process.env.DATABASE_URL) {
+    // Return error or mock success response when no DB
+    return NextResponse.json(
+      { error: 'Database not configured. Cannot create media.' },
+      { status: 500 }
+    );
+  }
   try {
     const body = await request.json();
     const { title, description, file_link, thumbnail } = body;

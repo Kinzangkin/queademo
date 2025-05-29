@@ -1,6 +1,26 @@
 import prisma from '@/lib/prisma';
 
+const mockMediaData = [
+  {
+    id: 1,
+    title: 'Mock Media 1',
+    description: 'This is a mock media description.',
+    file_link: 'https://example.com/file1.mp4',
+    thumbnail: 'https://example.com/thumb1.jpg',
+  },
+  {
+    id: 2,
+    title: 'Mock Media 2',
+    description: 'This is another mock media description.',
+    file_link: 'https://example.com/file2.mp4',
+    thumbnail: 'https://example.com/thumb2.jpg',
+  },
+];
+
 export async function generateStaticParams() {
+  if (!process.env.DATABASE_URL) {
+    return mockMediaData.map((media) => ({ id: media.id.toString() }));
+  }
   const medias = await prisma.media.findMany({ select: { id: true } });
   return medias.map((media) => ({ id: media.id.toString() }));
 }
@@ -15,9 +35,14 @@ export default async function TwixtDetailPage({ params }) {
     return <p className="text-white text-center mt-10">Invalid media ID</p>;
   }
 
-  const media = await prisma.media.findUnique({
-    where: { id: numericId },
-  });
+  let media;
+  if (!process.env.DATABASE_URL) {
+    media = mockMediaData.find((m) => m.id === numericId);
+  } else {
+    media = await prisma.media.findUnique({
+      where: { id: numericId },
+    });
+  }
 
   if (!media) {
     return <p className="text-white text-center mt-10">Media not found</p>;

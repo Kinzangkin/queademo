@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model media {
+  id          Int     @id @default(autoincrement())
+  title       String  @db.VarChar(255)
+  description String? @db.Text
+  file_link   String  @db.VarChar(500)
+  thumbnail   String? @db.VarChar(500)
+}
